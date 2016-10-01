@@ -1,6 +1,6 @@
 *
-*/tests
-*/a.out
+./**/tests
+./**/a.out
 !.gitignore
 !1/
 !2/
