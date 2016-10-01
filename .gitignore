@@ -1,4 +1,5 @@
 ./**/tests/
+.DS_Store
 repos/
 paral
 *.pub
