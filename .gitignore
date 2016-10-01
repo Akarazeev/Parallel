@@ -1,6 +1,5 @@
-*
-./**/tests
-./**/a.out
-!.gitignore
-!1/
-!2/
+./**/tests/
+repos/
+paral
+*.pub
+./**/*.out
