@@ -1,6 +1,6 @@
-./**/tests/
+1/tests
 .DS_Store
 repos/
 paral
 *.pub
-./**/*.out
+*.out
