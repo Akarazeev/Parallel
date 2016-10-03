@@ -16,22 +16,26 @@ def get_input_name(ind):
 def get_out_name(ind):
 	return u'o_{}.txt'.format(str(ind).zfill(3))
 
-batch_size = 10
+num_threads = 2
+batch_size = 1
 assert(batch_size < 1000)
 max_val = 10
-max_m = 100
+max_m = 200
 
 for i in range(batch_size):
 	open(fullpath + get_input_name(i),'w').close()
 	open(fullpath + get_out_name(i),'w').close()
 
 for i in range(batch_size):
-	m = randint(1,max_m)
-	n = randint(1,max_m)
+	# m = randint(1,max_m)
+	# n = randint(1,max_m)
+	m = max_m
+	n = max_m
 	tmp = [randint(0,max_val) for j in range(m * n)]
 
 	with open(fullpath + get_input_name(i),'w') as f:
-		f.write('{}\n'.format(randint(1,20)))
+		# f.write('{}\n'.format(randint(1,20)))
+		f.write('{}\n'.format(num_threads))
 		f.write('{} {}\n'.format(m,n))
 		f.write(' '.join(map(str, tmp)))
 	

@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import sys, os, string
+import sys, os, string, time
 from subprocess import Popen, PIPE, STDOUT
 
 class bcolors:
@@ -35,7 +35,9 @@ for inp, out in zip(inputs,outputs):
 	with open('tests/' + inp,'r') as f_i, open('tests/' + out,'r') as f_o:
 		p = Popen(['./{}'.format(sys.argv[1])], shell=True, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
 		input_values = f_i.read()
+		t1 = time.time()
 		prog_out = p.communicate(input_values)[0]
+		t2 = time.time()
 		prog_ans = prog_out
 		ans = f_o.read()
 		if prog_ans == ans:
@@ -47,3 +49,4 @@ for inp, out in zip(inputs,outputs):
 			print input_values
 			# print prog_out
 			print ''
+		print t2 - t1
