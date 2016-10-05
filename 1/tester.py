@@ -31,10 +31,10 @@ outputs = [x for x in list_dir if x.startswith('o')]
 outputs = sorted(outputs)
 assert(len(inputs) == len(outputs))
 
-for inp, out in zip(inputs,outputs):
+for inp, out, num_threads in zip(inputs,outputs):
 	with open('tests/' + inp,'r') as f_i, open('tests/' + out,'r') as f_o:
 		p = Popen(['./{}'.format(sys.argv[1])], shell=True, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-		input_values = f_i.read()
+		input_values = '{}\n'.num_threads + f_i.read()
 		t1 = time.time()
 		prog_out = p.communicate(input_values)[0]
 		t2 = time.time()
@@ -44,9 +44,9 @@ for inp, out in zip(inputs,outputs):
 			print inp + ' - ' + bcolors.OKGREEN + 'TRUE' + bcolors.ENDC
 			# print 'Output: {}, Answer: {}'.format(prog_ans,ans)
 		else:
-			print inp + ' - ' + bcolors.FAIL + 'FALSE' + bcolors.ENDC
-			print 'Output: {}, Answer: {}'.format(prog_ans,ans)
-			print input_values
-			# print prog_out
-			print ''
-		print t2 - t1
+			# print inp + ' - ' + bcolors.FAIL + 'FALSE' + bcolors.ENDC
+			# print 'Output: {}, Answer: {}'.format(prog_ans,ans)
+			# print input_values
+			print prog_out
+			# print ''
+		# print t2 - t1

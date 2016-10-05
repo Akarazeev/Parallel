@@ -1,6 +1,7 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import random
 from random import randint
 import os, sys, string
 
@@ -19,8 +20,8 @@ def get_out_name(ind):
 num_threads = 2
 batch_size = 1
 assert(batch_size < 1000)
-max_val = 10
-max_m = 200
+max_val = 100
+max_m = 1000
 
 for i in range(batch_size):
 	open(fullpath + get_input_name(i),'w').close()
@@ -33,18 +34,18 @@ for i in range(batch_size):
 	n = max_m
 	tmp = [randint(0,max_val) for j in range(m * n)]
 
-	with open(fullpath + get_input_name(i),'w') as f:
+	with open(fullpath + get_input_name(i),'wb') as f:
 		# f.write('{}\n'.format(randint(1,20)))
-		f.write('{}\n'.format(num_threads))
-		f.write('{} {}\n'.format(m,n))
-		f.write(' '.join(map(str, tmp)))
+		f.write(b'{}\n'.format(num_threads))
+		f.write(b'{} {}\n'.format(m,n))
+		f.write(b' '.join(map(str, tmp)))
 	
-	with open(fullpath + get_out_name(i),'w') as f:
-		f.write(str(max(tmp)))
-		f.write('\n')
-		f.write(' '.join(map(str,[i for i,j in enumerate(tmp) if j == max(tmp)])))
-		f.write('\n')
-		f.write(str(min(tmp)))
-		f.write('\n')
-		f.write(' '.join(map(str,[i for i,j in enumerate(tmp) if j == min(tmp)])))
-		f.write('\n')
+	# with open(fullpath + get_out_name(i),'w') as f:
+	# 	f.write(str(max(tmp)))
+	# 	f.write('\n')
+	# 	f.write(' '.join(map(str,[i for i,j in enumerate(tmp) if j == max(tmp)])))
+	# 	f.write('\n')
+	# 	f.write(str(min(tmp)))
+	# 	f.write('\n')
+	# 	f.write(' '.join(map(str,[i for i,j in enumerate(tmp) if j == min(tmp)])))
+	# 	f.write('\n')

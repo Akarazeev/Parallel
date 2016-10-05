@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/time.h>
 
 #define max(a,b) \
 	({ __typeof__ (a) _a = (a); \
@@ -139,6 +140,8 @@ int comp (const void * elem1, const void * elem2) {
 }
 
 int main(int argc, char **argv) {
+	struct timeval t1, t2;
+	gettimeofday(&t1, NULL);
 	if (pthread_mutex_init(&mutex, NULL) != 0 && 
 		pthread_mutex_init(&mutex_position, NULL) != 0 && 
 		pthread_cond_init(&cv, NULL) != 0) {
@@ -173,7 +176,10 @@ int main(int argc, char **argv) {
 	}
 	ans_max = array[0];
 	ans_min = array[0];
+	gettimeofday(&t2, NULL);
+	printf("%d\n", t2.tv_usec - t1.tv_usec);
 
+	gettimeofday(&t1, NULL);
 	for (i = 0; i < thread_count; ++i) {
 		indxs[i] = i;
 		pthread_create(&threads[i], NULL, func, &indxs[i]);
@@ -181,38 +187,40 @@ int main(int argc, char **argv) {
 	for (i = 0; i < thread_count; ++i) {
 		pthread_join(threads[i], NULL);
 	}
-
+	gettimeofday(&t2, NULL);
 	// puts("----<<--->>------");
+	// printf("Time: %d", t2.tv_usec - t1.tv_usec);
+	printf("%d", t2.tv_usec - t1.tv_usec);
 
 	qsort(ans_max_positions, max_cur_pos, sizeof(int), comp);
 	qsort(ans_min_positions, min_cur_pos, sizeof(int), comp);
 
-	printf("%.0lf\n", ans_max);
-	for (i = 0; i < max_cur_pos; ++i) {
-		if (i == 0) {
-			printf("%d", ans_max_positions[i]);
-		} else {
-			printf(" %d", ans_max_positions[i]);
-		}
-	}
-	printf("\n");
-	printf("%.0lf\n", ans_min);
-	for (i = 0; i < min_cur_pos; ++i) {
-		if (i == 0) {
-			printf("%d", ans_min_positions[i]);
-		} else {
-			printf(" %d", ans_min_positions[i]);
-		}
-	}
-	printf("\n");
+	// printf("%.0lf\n", ans_max);
+	// for (i = 0; i < max_cur_pos; ++i) {
+	// 	if (i == 0) {
+	// 		printf("%d", ans_max_positions[i]);
+	// 	} else {
+	// 		printf(" %d", ans_max_positions[i]);
+	// 	}
+	// }
+	// printf("\n");
+	// printf("%.0lf\n", ans_min);
+	// for (i = 0; i < min_cur_pos; ++i) {
+	// 	if (i == 0) {
+	// 		printf("%d", ans_min_positions[i]);
+	// 	} else {
+	// 		printf(" %d", ans_min_positions[i]);
+	// 	}
+	// }
+	// printf("\n");
 
-	// pthread_mutex_destroy(&mutex);
-	// pthread_mutex_destroy(&mutex_position);
-	// pthread_cond_destroy(&cv);
-	// free(array);
-	// free(threads);
-	// free(indxs);
-	// free(ans_max_positions);
-	// free(ans_min_positions);
+	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&mutex_position);
+	pthread_cond_destroy(&cv);
+	free(array);
+	free(threads);
+	free(indxs);
+	free(ans_max_positions);
+	free(ans_min_positions);
 	return 0;
 }
