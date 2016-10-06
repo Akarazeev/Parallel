@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include <sys/time.h>
+
+//{1,2,3,4,6,8,16,24,32} - num_threads
+//{3,10,100,500,1000,3000,5000,10000} - matrix_sizes
 
 #define max(a,b) \
 	({ __typeof__ (a) _a = (a); \
@@ -69,8 +73,7 @@ void* func(void* arg) {
 	int ind = *(int*) arg;
 
 	int batch_i = leng * ind;
-	// printf("> Batch_i: %d\n", ind);
-	// int batch_end = batch_i + leng + 1;
+
 	int batch_end = batch_i + leng;
 	if (ind == thread_count - 1) {
 		batch_end = array_size;
@@ -116,9 +119,7 @@ void* func(void* arg) {
 		}
 		if (array[i] == ans_min) {
 			ans_min_positions[min_cur_pos] = i;
-			// printf("))%d\n", ans_min_positions[min_cur_pos]);
 			min_cur_pos += 1;
-			// printf("----%d\n", min_cur_pos);
 		}
 	}
 	pthread_mutex_unlock(&mutex);
@@ -141,6 +142,7 @@ int comp (const void * elem1, const void * elem2) {
 
 int main(int argc, char **argv) {
 	struct timeval t1, t2;
+
 	gettimeofday(&t1, NULL);
 	if (pthread_mutex_init(&mutex, NULL) != 0 && 
 		pthread_mutex_init(&mutex_position, NULL) != 0 && 
@@ -149,16 +151,29 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-	scanf("%d", &thread_count);
+    FILE* f = fopen("mm.bin", "rb");
+    char* type_readed = malloc(6 * sizeof(char));
+    fread(type_readed, sizeof(char), 6, f);
+    if (strcmp(type_readed, "MATRIX") != 0) {
+    	puts("type_readed != MATRIX.");
+    	puts("Exit.");
+    	return 1;
+    }
+
+	// scanf("%d", &thread_count);
+	thread_count = atoi(argv[1]);
+
 	int m;
 	int n;
-	scanf("%d %d", &m, &n);
+	fread(&m, sizeof(int), 1, f);
+	fread(&n, sizeof(int), 1, f);
+	// printf("%d %d\n", m, n);
+
 	array_size = m * n;
 	if (thread_count >= array_size) {
 		thread_count = max(1, array_size / 2);
 	}
 	leng = array_size / thread_count;
-	// printf("> Leng: %d\n", leng);
 
 	pthread_t* threads = malloc(thread_count * sizeof(pthread_t));
 	ans_max_positions = malloc(array_size * sizeof(int));
@@ -167,17 +182,18 @@ int main(int argc, char **argv) {
 	indxs = malloc(thread_count * sizeof(int));
 
 	int i;
-	// FILE* f = fopen("data.txt", "r");
+	double tmp;
 	for (i = 0; i < array_size; ++i) {
-		double tmp;
-		scanf("%lf", &tmp);
-		// fscanf(f, "%d", &tmp);
+		fread(&tmp, sizeof(double), 1, f);
 		array[i] = tmp;
 	}
 	ans_max = array[0];
 	ans_min = array[0];
+
 	gettimeofday(&t2, NULL);
-	printf("%d\n", t2.tv_usec - t1.tv_usec);
+	unsigned long int tv1 = t1.tv_sec*1e6 + t1.tv_usec;
+	unsigned long int tv2 = t2.tv_sec*1e6 + t2.tv_usec;
+	printf("%lu\n", tv2 - tv1);
 
 	gettimeofday(&t1, NULL);
 	for (i = 0; i < thread_count; ++i) {
@@ -188,9 +204,10 @@ int main(int argc, char **argv) {
 		pthread_join(threads[i], NULL);
 	}
 	gettimeofday(&t2, NULL);
-	// puts("----<<--->>------");
-	// printf("Time: %d", t2.tv_usec - t1.tv_usec);
-	printf("%d", t2.tv_usec - t1.tv_usec);
+
+	tv1 = t1.tv_sec*1e6 + t1.tv_usec;
+	tv2 = t2.tv_sec*1e6 + t2.tv_usec;
+	printf("%lu\n", tv2 - tv1);
 
 	qsort(ans_max_positions, max_cur_pos, sizeof(int), comp);
 	qsort(ans_min_positions, min_cur_pos, sizeof(int), comp);
