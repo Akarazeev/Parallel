@@ -1,8 +1,4 @@
-1/tests
-.DS_Store
-repos/
-paral
+*.DS_Store
 *.pub
 *.out
 *.bin
-.ipynb_checkpoints

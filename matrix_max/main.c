@@ -5,9 +5,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-//{1,2,3,4,6,8,16,24,32} - num_threads
-//{3,10,100,500,1000,3000,5000,10000} - matrix_sizes
-
 #define max(a,b) \
 	({ __typeof__ (a) _a = (a); \
 	   __typeof__ (b) _b = (b); \
@@ -17,41 +14,6 @@
 	({ __typeof__ (a) _a = (a); \
 	   __typeof__ (b) _b = (b); \
 		_a < _b ? _a : _b; })
-
-/*
-int pthread_create() {
-	pthread_t *t;
-	pthread_t *attr;
-	void *(*thread_body(void*));
-}
-*/
-
-/*=========================================
-
-There are two options to cancel the thread:
-1. pthread_exit()
-2. pthread_cancel()
-2'. pthread_join()
-
-==========================================*/
-
-/*==========================================
-	MUTEXES
-
-Recommended to declare globally.
- 
-pthread_mutex
-pthread_mutex_init
-pthread_mutex_trylock
-pthread_mutex_timedlock - not recommended to use (!)
-
-
-	CONDITION VARIABLES
-
-pthread_cond_wait
-pthread_cond_signal
-
-============================================*/
 
 pthread_mutex_t mutex;
 pthread_mutex_t mutex_position;
@@ -86,7 +48,6 @@ void* func(void* arg) {
 	double loc_min = array[batch_i];
 	int i;
 	for (i = batch_i; i < batch_end; ++i) {
-		// printf("+%d\n", i);
 		if (array[i] > loc_max) {
 			loc_max = array[i];
 		}
@@ -112,7 +73,6 @@ void* func(void* arg) {
 
 	pthread_mutex_lock(&mutex);
 	for (i = batch_i; i < batch_end; ++i) {
-		// printf("))%d\n", i);
 		if (array[i] == ans_max) {
 			ans_max_positions[max_cur_pos] = i;
 			max_cur_pos += 1;
@@ -124,6 +84,7 @@ void* func(void* arg) {
 	}
 	pthread_mutex_unlock(&mutex);
 	pthread_mutex_unlock(&mutex_position);
+	pthread_cond_broadcast(&cv);
 
 	return NULL;
 }
@@ -151,7 +112,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    FILE* f = fopen("mm.bin", "rb");
+    FILE* f = fopen("matrix.bin", "rb");
     char* type_readed = malloc(6 * sizeof(char));
     fread(type_readed, sizeof(char), 6, f);
     if (strcmp(type_readed, "MATRIX") != 0) {
@@ -160,14 +121,17 @@ int main(int argc, char **argv) {
     	return 1;
     }
 
-	// scanf("%d", &thread_count);
+    if (argc < 2) {
+    	perror("Usage: ./a.out <num_threads>");
+    	exit(1);
+    }
+    
 	thread_count = atoi(argv[1]);
 
 	int m;
 	int n;
 	fread(&m, sizeof(int), 1, f);
 	fread(&n, sizeof(int), 1, f);
-	// printf("%d %d\n", m, n);
 
 	array_size = m * n;
 	if (thread_count >= array_size) {
@@ -193,7 +157,7 @@ int main(int argc, char **argv) {
 	gettimeofday(&t2, NULL);
 	unsigned long int tv1 = t1.tv_sec*1e6 + t1.tv_usec;
 	unsigned long int tv2 = t2.tv_sec*1e6 + t2.tv_usec;
-	printf("%lu\n", tv2 - tv1);
+	// printf("%lu\n", tv2 - tv1);
 
 	gettimeofday(&t1, NULL);
 	for (i = 0; i < thread_count; ++i) {
@@ -207,29 +171,29 @@ int main(int argc, char **argv) {
 
 	tv1 = t1.tv_sec*1e6 + t1.tv_usec;
 	tv2 = t2.tv_sec*1e6 + t2.tv_usec;
-	printf("%lu\n", tv2 - tv1);
+	printf("Time: %lu\n", tv2 - tv1);
 
 	qsort(ans_max_positions, max_cur_pos, sizeof(int), comp);
 	qsort(ans_min_positions, min_cur_pos, sizeof(int), comp);
 
-	// printf("%.0lf\n", ans_max);
-	// for (i = 0; i < max_cur_pos; ++i) {
-	// 	if (i == 0) {
-	// 		printf("%d", ans_max_positions[i]);
-	// 	} else {
-	// 		printf(" %d", ans_max_positions[i]);
-	// 	}
-	// }
-	// printf("\n");
-	// printf("%.0lf\n", ans_min);
-	// for (i = 0; i < min_cur_pos; ++i) {
-	// 	if (i == 0) {
-	// 		printf("%d", ans_min_positions[i]);
-	// 	} else {
-	// 		printf(" %d", ans_min_positions[i]);
-	// 	}
-	// }
-	// printf("\n");
+	printf("%.0lf\n", ans_max);
+	for (i = 0; i < max_cur_pos; ++i) {
+		if (i == 0) {
+			printf("%d", ans_max_positions[i]);
+		} else {
+			printf(" %d", ans_max_positions[i]);
+		}
+	}
+	printf("\n");
+	printf("%.0lf\n", ans_min);
+	for (i = 0; i < min_cur_pos; ++i) {
+		if (i == 0) {
+			printf("%d", ans_min_positions[i]);
+		} else {
+			printf(" %d", ans_min_positions[i]);
+		}
+	}
+	printf("\n");
 
 	pthread_mutex_destroy(&mutex);
 	pthread_mutex_destroy(&mutex_position);
