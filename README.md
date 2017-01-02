@@ -10,7 +10,9 @@ Then it is necessary to run `main.c`:
 1. `gcc -pthread main.c -o main.out`
 2. `./main.out <num_threads>`
 3. Output contains:
+    ```
     # MAXIMUM
     # indexes of MAXIMUM
     # MINIMUM
     #indexes of MINIMUM
+    ```
